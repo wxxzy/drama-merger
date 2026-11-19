@@ -1,0 +1,51 @@
+# ============================================================
+# drama-merger · Git 忽略规则
+# ============================================================
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.venv/
+venv/
+
+# PyInstaller 打包产物（体积大，可由 打包.bat 重新生成）
+build/
+dist/
+*.spec.bak
+
+# 测试素材与产物（由 tests/make_fixtures.py 生成，不入库）
+tests/out/
+tests/scene*/
+*_merged.mp4
+
+# 媒体与字幕素材（体积大）
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.srt
+*.vtt
+*.ass
+
+# 图片素材 / 封面源图（体积大，含具体剧目素材）
+_cover_src/
+*.png
+*.jpg
+*.jpeg
+
+# 生成的发布缩略图（保留发布文本示例）
+youtube/缩略图/
+
+# 系统 / 编辑器
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# 临时文件
+*.tmp
+*.log
+temp_*/

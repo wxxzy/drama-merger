@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>短剧视频合并 · 技术选型评估报告</title>
+<style>
+  :root{
+    --bg:#f7f8fa; --card:#ffffff; --ink:#1a1d21; --ink2:#4a5058; --ink3:#8b9199;
+    --line:#e4e7eb; --brand:#1f6feb; --brand-soft:#eaf1fd;
+    --ok:#1a7f4b; --ok-soft:#e8f5ee;
+    --warn:#9a6700; --warn-soft:#fff8e6;
+    --bad:#b42318; --bad-soft:#fdecea;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI","Microsoft YaHei",-apple-system,sans-serif;
+    line-height:1.75; font-size:15px;
+  }
+  .wrap{max-width:960px; margin:0 auto; padding:48px 28px 80px}
+  header{border-bottom:3px solid var(--brand); padding-bottom:22px; margin-bottom:38px}
+  header .kicker{color:var(--brand); font-size:13px; font-weight:700; letter-spacing:.1em; text-transform:uppercase}
+  h1{margin:10px 0 12px; font-size:30px; line-height:1.3; letter-spacing:-.4px}
+  header .meta{color:var(--ink3); font-size:13.5px}
+  header .meta b{color:var(--ink2); font-weight:600}
+  h2{
+    font-size:20px; margin:44px 0 16px; padding-left:12px;
+    border-left:4px solid var(--brand); line-height:1.4;
+  }
+  h3{font-size:16px; margin:28px 0 10px; color:var(--ink)}
+  p{margin:12px 0; color:var(--ink2)}
+  ul,ol{margin:12px 0; padding-left:24px; color:var(--ink2)}
+  li{margin:7px 0}
+  code{
+    background:#eef1f4; padding:2px 6px; border-radius:4px;
+    font-family:"Cascadia Code",Consolas,monospace; font-size:13px; color:#0f1720;
+  }
+  pre{
+    background:#1c2128; color:#d8dee6; padding:16px 18px; border-radius:8px;
+    overflow-x:auto; font-family:"Cascadia Code",Consolas,monospace;
+    font-size:12.5px; line-height:1.65; margin:14px 0;
+  }
+  pre code{background:none; padding:0; color:inherit}
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:20px 22px; margin:18px 0;
+  }
+  .verdict{
+    background:var(--brand-soft); border:1px solid #c5dbfb; border-left:4px solid var(--brand);
+    border-radius:8px; padding:18px 22px; margin:22px 0;
+  }
+  .verdict .t{font-weight:700; color:var(--brand); font-size:14.5px; margin-bottom:8px}
+  .verdict p{margin:6px 0; color:var(--ink)}
+  table{
+    width:100%; border-collapse:collapse; margin:18px 0; font-size:13.5px;
+    background:var(--card); border:1px solid var(--line); border-radius:8px; overflow:hidden;
+  }
+  th{
+    background:#f0f3f7; text-align:left; padding:11px 13px;
+    font-weight:600; color:var(--ink); border-bottom:2px solid var(--line); font-size:13px;
+  }
+  td{padding:10px 13px; border-bottom:1px solid var(--line); color:var(--ink2); vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td.hi{color:var(--ink); font-weight:600}
+  .tag{
+    display:inline-block; padding:2px 9px; border-radius:20px;
+    font-size:11.5px; font-weight:600; line-height:1.7;
+  }
+  .tag.ok{background:var(--ok-soft); color:var(--ok)}
+  .tag.warn{background:var(--warn-soft); color:var(--warn)}
+  .tag.bad{background:var(--bad-soft); color:var(--bad)}
+  .tag.neutral{background:#eef1f4; color:var(--ink2)}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:18px 0}
+  @media(max-width:720px){.grid2{grid-template-columns:1fr}}
+  .metric{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px 20px}
+  .metric .v{font-size:26px; font-weight:700; color:var(--brand); line-height:1.2; letter-spacing:-.5px}
+  .metric .v small{font-size:14px; font-weight:600; color:var(--ink3); margin-left:3px}
+  .metric .k{font-size:13px; color:var(--ink3); margin-top:5px}
+  .bar{height:8px; background:#e8ecf1; border-radius:4px; overflow:hidden; margin-top:11px}
+  .bar i{display:block; height:100%; background:var(--brand); border-radius:4px}
+  .bar.g i{background:var(--ok)}
+  .note{
+    background:var(--warn-soft); border:1px solid #f0dfae; border-radius:8px;
+    padding:15px 18px; margin:18px 0; font-size:13.5px; color:#6b4c00;
+  }
+  .note b{color:#4a3400}
+  .danger{background:var(--bad-soft); border-color:#f5c6c1; color:#7a1a12}
+  .danger b{color:#5c130d}
+  footer{
+    margin-top:56px; padding-top:22px; border-top:1px solid var(--line);
+    color:var(--ink3); font-size:12.5px; text-align:center;
+  }
+  .chain{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:20px 0}
+  .chain .n{
+    background:var(--card); border:1px solid var(--line); border-radius:8px;
+    padding:10px 15px; font-size:13px; color:var(--ink); font-weight:600;
+  }
+  .chain .a{color:var(--ink3); font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">技术选型评估报告</div>
+  <h1>短剧视频合并工具 · 技术方案评估</h1>
+  <div class="meta">
+    评估日期 <b>2026-10-21</b> · 目标机器 <b>GTX 1080 Ti / 16 核 / Windows</b> ·
+    评估方式 <b>本机实测</b>（非理论推演）
+  </div>
+</header>
+
+<div class="verdict">
+  <div class="t">结论：用 ffmpeg 命令行 + Python 薄封装，不要用 MoviePy</div>
+  <p><b>核心判断依据：</b>短剧合并的本质是"把 N 个同源文件首尾相接"，绝大多数情况是 <b>码流复制</b>而非重新编码。ffmpeg 的 concat demuxer 能让 18 秒素材在 <b>0.3 秒</b>内完成且画质零损失；而 MoviePy 会强制解码再编码，同样任务要几十秒，且画质白白损失一代。</p>
+  <p><b>开发代价：</b>约 1500 行 Python（无第三方依赖），换来对时间戳、字幕、音轨的完全掌控。</p>
+</div>
+
+<h2>一、为什么不用现成库</h2>
+
+<p>合并视频的常见选择有四类，逐一看实测结果：</p>
+
+<table>
+  <thead>
+    <tr><th style="width:22%">方案</th><th style="width:15%">速度</th><th style="width:13%">画质</th><th>关键问题</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="hi">ffmpeg CLI<br><span style="font-weight:400;color:var(--ink3);font-size:12.5px">concat demuxer</span></td>
+      <td><span class="tag ok">最快</span><br>0.3s / 18s素材</td>
+      <td><span class="tag ok">零损失</span></td>
+      <td>需要自己处理路径转义、时间戳、字幕重映射</td>
+    </tr>
+    <tr>
+      <td class="hi">MoviePy</td>
+      <td><span class="tag bad">慢</span><br>全量重编码</td>
+      <td><span class="tag warn">二次损失</span></td>
+      <td>内部也是调 ffmpeg，但强制走"解码→拼接→重编码"，<b>丢掉了无损路径</b>；对音轨缺失、参数不一致的场景容易崩</td>
+    </tr>
+    <tr>
+      <td class="hi">OpenCV (cv2)</td>
+      <td><span class="tag bad">很慢</span></td>
+      <td><span class="tag bad">有损</span></td>
+      <td>逐帧读写，<b>丢音轨</b>，帧率/码率控制粗糙。不适合成品视频合并</td>
+    </tr>
+    <tr>
+      <td class="hi">PyAV</td>
+      <td><span class="tag warn">中</span></td>
+      <td><span class="tag ok">可控</span></td>
+      <td>能用但需手写 packet 复制逻辑才能无损；等于重新实现 ffmpeg 的 concat，性价比低</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="note">
+  <b>本机已装情况：</b>实测 <code>moviepy</code> 未安装（不用装正好），
+  <code>av</code> 18.0.0、<code>cv2</code> 5.0.0、<code>imageio_ffmpeg</code> 0.6.0 已存在。
+  最终方案<b>不依赖任何第三方库</b>，只用标准库 + 系统 ffmpeg，部署零负担。
+</div>
+
+<h2>二、核心设计：三档策略自动降级</h2>
+
+<p>合并视频最大的坑不是"怎么拼"，而是"<b>什么时候能无损拼、什么时候必须重编码</b>"。搞错了要么画质白丢，要么拼出来花屏。</p>
+
+<p>工具先探测每个片段的分辨率、帧率、编码格式、像素格式、音轨参数，再做一致性分析，据此选策略：</p>
+
+<div class="chain">
+  <div class="n">策略 A · 无损拼接</div>
+  <span class="a">参数有差异 →</span>
+  <div class="n">策略 B · 归一化拼接</div>
+  <span class="a">B 失败 →</span>
+  <div class="n">策略 C · 滤镜重编码</div>
+</div>
+
+<table>
+  <thead>
+    <tr><th style="width:20%">策略</th><th style="width:26%">触发条件</th><th style="width:14%">实现方式</th><th>实测性能</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="hi">A 无损拼接</td>
+      <td>所有片段关键参数完全一致<br>且无裁剪/淡变需求</td>
+      <td><code>concat demuxer</code><br><code>-c copy</code></td>
+      <td><b>18s 素材 → 0.3 秒</b>（60x 实时）<br>画质零损失</td>
+    </tr>
+    <tr>
+      <td class="hi">B 归一化拼接</td>
+      <td>参数有差异：分辨率/帧率/<br>像素格式/采样率/音轨缺失</td>
+      <td>先逐片段统一参数，<br>再走 A 的无损拼接</td>
+      <td><b>15s 素材 → 3.1 秒</b>（4.8x 实时）<br>只损失一次画质</td>
+    </tr>
+    <tr>
+      <td class="hi">C 滤镜重编码</td>
+      <td>B 执行失败时兜底</td>
+      <td><code>concat</code> 滤镜<br>一次性重编码</td>
+      <td>15s 素材 → 2.1 秒<br>兼容性最强</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="grid2">
+  <div class="metric">
+    <div class="v">60<small>x</small></div>
+    <div class="k">策略A 无损拼接实时倍速（18s素材/0.3s）</div>
+    <div class="bar g"><i style="width:100%"></i></div>
+  </div>
+  <div class="metric">
+    <div class="v">2.1<small>x</small></div>
+    <div class="k">NVENC 相对 libx264 的编码加速比</div>
+    <div class="bar"><i style="width:48%"></i></div>
+  </div>
+</div>
+
+<p><b>为什么策略 B 要"先归一化再无损拼接"，而不是直接重编码整片？</b></p>
+<p>因为逐片段归一化后，拼接环节仍是 <code>-c copy</code>。这样总耗时 = 一次转码，而不是"转码 + 再编码一遍"。省掉的那一遍是纯赚的。</p>
+
+<h2>三、硬件加速：必须运行时实测，不能信编译选项</h2>
+
+<p>这是本次评估最有价值的发现之一。本机同时存在两个 ffmpeg，<b>NVENC 支持情况完全相反</b>：</p>
+
+<table>
+  <thead>
+    <tr><th style="width:34%">ffmpeg 来源</th><th style="width:14%">版本</th><th style="width:14%">NVENC 实测</th><th>原因</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="hi">imageio_ffmpeg 自带</td>
+      <td>7.1</td>
+      <td><span class="tag ok">可用</span></td>
+      <td>使用较旧的 NVENC API 12.x，当前驱动支持</td>
+    </tr>
+    <tr>
+      <td class="hi">WinGet (Gyan full_build)</td>
+      <td>8.1.2</td>
+      <td><span class="tag bad">不可用</span></td>
+      <td>要求 NVENC API 13.1 / 驱动 ≥ 610.00，当前 560.94</td>
+    </tr>
+  </tbody>
+</table>
+
+<pre><code>[h264_nvenc] Driver does not support the required nvenc API version.
+              Required: 13.1  Found: 12.2
+              The minimum required Nvidia driver for nvenc is 610.00 or newer</code></pre>
+
+<p>两个 ffmpeg 的 <code>-encoders</code> 输出<b>都列出</b>了 <code>h264_nvenc</code>。也就是说：<b>"编译时包含"不等于"运行时可用"</b>。如果只看 encoders 列表就决定用硬件编码，程序会直接崩。</p>
+
+<div class="verdict">
+  <div class="t">设计取舍</div>
+  <p>工具启动时枚举所有候选 ffmpeg，对每个<b>实际跑一次 1 秒的 NVENC 编码测试</b>，只把真正成功的标记为可用，再按"NVENC可用 &gt; 有配套ffprobe &gt; 版本新"排序择优。</p>
+  <p>代价：首次启动多花约 1 秒。收益：换 ffmpeg 版本、升级驱动、换机器都不会踩坑——而且能自动用上最合适的那一个。</p>
+</div>
+
+<h3>性能实测（GTX 1080 Ti，1080×1920 竖屏，60 秒素材）</h3>
+
+<table>
+  <thead>
+    <tr><th style="width:36%">编码器</th><th style="width:20%">耗时</th><th>备注</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="hi">h264_nvenc (preset p4, cq 23)</td>
+      <td><b>6 秒</b></td>
+      <td>纳秒级不可移植，需驱动支持，实测可用</td>
+    </tr>
+    <tr>
+      <td class="hi">libx264 (preset veryfast, crf 23)</td>
+      <td>13 秒</td>
+      <td>纯 CPU，16 核并行，永远可用</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>结论：<b>硬件编码约 2 倍加速</b>。但因为策略 A 根本不编码，实际合并短剧时——如果素材同源——瓶颈不在这里。硬件加速主要惠及需要归一化或裁剪的场景。</p>
+
+<h2>四、踩坑与解决（本报告最实用的部分）</h2>
+
+<h3>坑 1：23 毫秒的时间戳偏移</h3>
+
+<p>最初用 <code>-avoid_negative_ts make_zero</code>（这是网上拼接教程的常见配方），结果输出起始时间异常：</p>
+
+<pre><code>video start_time = 0.100000
+audio start_time = 0.076009   ← 音画起点差 24ms
+format duration = 18.023220   ← 多出 23ms</code></pre>
+
+<p>逐步消元，做了 10 组对照实验，最终定位：</p>
+
+<table>
+  <thead>
+    <tr><th style="width:46%">命令组合</th><th style="width:22%">起始时间</th><th>时长</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>concat + <code>-c copy</code>（裸）</td><td>video 0.023031</td><td>18.023220</td></tr>
+    <tr><td>+ <code>-avoid_negative_ts make_zero</code></td><td>video 0.100000 / audio 0.076009</td><td>—</td></tr>
+    <tr><td>+ <code>-fflags +genpts</code></td><td>video 0.023031</td><td>18.023220</td></tr>
+    <tr><td class="hi">+ <code>-copyts</code></td><td class="hi">0.000000 / 0.000000</td><td class="hi">18.000000 ✅</td></tr>
+  </tbody>
+</table>
+
+<p>关键验证：加 <code>-copyts</code> 后帧数 = <b>432</b>，恰好等于 18 × 24fps，且抽帧画面、三段音频位置全部正确。</p>
+
+<div class="note danger">
+  <b>为什么必须修：</b>单看 23ms 无所谓（低于人眼 ~45ms 的感知阈值），但它会<b>逐集累积</b>。合成 80 集短剧时，末尾可能漂移近 2 秒——妥妥的音画不同步。<b>这类"小偏移"是批量合并工具最容易埋的雷。</b>
+</div>
+
+<h3>坑 2：无音轨片段导致拼接失败</h3>
+
+<p>短剧素材常有部分集缺音轨。策略 C 最初用 <code>anull</code> 补静音，报错：</p>
+
+<pre><code>Error binding filtergraph inputs/outputs: Invalid argument
+Stream specifier ':v' in filtergraph description ... matches no streams.</code></pre>
+
+<p>原因：<code>anull</code> 是<b>音频滤镜</b>，不能接视频流。正确做法是追加一路独立的 lavfi 静音输入：</p>
+
+<pre><code>-f lavfi -i anullsrc=r=44100:cl=stereo:d=5.0</code></pre>
+
+<p>且<b>必须带时长</b>（<code>d=</code>）——不指定的话音源无限长，concat 会永不完结，程序看起来就像卡死。</p>
+
+<h3>坑 3：NVENC 的音画起点差</h3>
+
+<p>NVENC 有约 3 帧编码器延迟。若在归一化阶段混用 <code>avoid_negative_ts</code>，会把这个延迟固化成可见的起始偏移。归一化命令里刻意不加该参数，确保各片段起始时间干净归零（实测中间文件均为 <code>0.000000</code>）。</p>
+
+<h2>五、字幕：被低估的难点</h2>
+
+<p>分集字幕<b>各自从 <code>00:00:00</code> 开始计时</b>。直接拼接的后果：第 2 集的对白全部提前出现在第 1 集的时间段里。</p>
+
+<p>工具会按每集在成片中的实际起始位置做整体平移。实测（3 集 × 6 秒）：</p>
+
+<pre><code>第1集.srt (+0.00s,  3条)
+第2集.srt (+6.00s,  3条)     ← 整体后移 6 秒
+第3集.srt (+12.00s, 3条)     ← 整体后移 12 秒</code></pre>
+
+<p>支持 SRT / VTT / ASS 三种格式。另外实现了毫秒补位处理——<code>00:00:01,5</code> 这种不规范的 1 位毫秒要按 500ms 而非 5ms 解析，否则字幕会集体提前。</p>
+
+<h2>六、最终技术栈</h2>
+
+<table>
+  <thead>
+    <tr><th style="width:26%">层</th><th style="width:30%">选型</th><th>理由</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="hi">合并引擎</td><td>ffmpeg CLI（subprocess）</td><td>无损路径唯一选择；能力完整；零依赖</td></tr>
+    <tr><td class="hi">语言</td><td>Python 3.11</td><td>本机主力版本；处理文本/时间轴方便</td></tr>
+    <tr><td class="hi">媒体探测</td><td>ffprobe (JSON) + ffmpeg -i 退化路径</td><td>结构化数据可靠；无 ffprobe 时也能用</td></tr>
+    <tr><td class="hi">硬件加速</td><td>NVENC（运行时实测后再启用）</td><td>约 2x 加速，但不可硬编码假设</td></tr>
+    <tr><td class="hi">界面</td><td>argparse + Tkinter</td><td>标准库自带，无需额外安装</td></tr>
+    <tr><td class="hi">第三方依赖</td><td><b>无</b></td><td>部署零负担，不会因环境变化失效</td></tr>
+  </tbody>
+</table>
+
+<h2>七、验证结果</h2>
+
+<p>端到端测试 <b>38 项全部通过</b>，覆盖四类场景：</p>
+
+<table>
+  <thead>
+    <tr><th style="width:28%">测试场景</th><th style="width:16%">素材特征</th><th>验证结果</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="hi">参数一致</td><td>3集 768×1344@24fps</td>
+      <td><span class="tag ok">策略A</span> 时长精确 18.000s，起点 0.000000，大小与素材总和一致（证明未重编码）</td>
+    </tr>
+    <tr>
+      <td class="hi">参数混杂</td><td>3种分辨率/帧率<br>含无音轨片段</td>
+      <td><span class="tag ok">策略B</span> 统一至 768×1344@30fps，音轨补齐（RMS -25.9dB 确认有声），起点归零</td>
+    </tr>
+    <tr>
+      <td class="hi">中文名+两位数集数</td><td>第1/2/10/11集</td>
+      <td><span class="tag ok">自然排序正确</span> 第2集排在第10集之前</td>
+    </tr>
+    <tr>
+      <td class="hi">边界容错</td><td>损坏文件+非视频文件<br>单片段</td>
+      <td><span class="tag ok">全部优雅处理</span> 损坏文件标记失败并跳过，非视频忽略，单文件正常兜底</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>此外验证了：裁剪（6s→4s 精确）、淡入淡出、字幕时间轴重映射、全片解码无错误。</p>
+
+<h2>八、后续可扩展方向</h2>
+
+<ul>
+  <li><b>转场效果</b>：集与集之间加交叉溶解（需重编码，会失去无损路径，建议做成可选）</li>
+  <li><b>音频响度统一</b>：各集音量不一致时，用 <code>loudnorm</code> 滤镜统一到 -16 LUFS</li>
+  <li><b>水印/台标</b>：批量叠加统一角标</li>
+  <li><b>自动去重复片头</b>：检测各集开头相似片段并自动裁剪（当前需手动指定 <code>--trim-head</code>）</li>
+  <li><b>分集标记</b>：在成片中插入章节（chapter），方便导航</li>
+</ul>
+
+<footer>
+  评估基于本机实测数据（GTX 1080 Ti / 16 核 / Windows / ffmpeg 7.1 + 8.1.2）。<br>
+  所有性能数字均为实际运行结果，非理论推测。
+</footer>
+
+</div>
+</body>
+</html>
